@@ -2,58 +2,129 @@
 
 ## 📌 Project Overview
 
-This project addresses the classification of breast cancer histology images using a Convolutional Neural Network (CNN). It aims to assist early cancer diagnosis by automating the classification of tissue images into four classes: **Normal, Benign, In Situ carcinoma,** and **Invasive carcinoma**.
+This project focuses on classifying breast cancer histology images using a Convolutional Neural Network (CNN). It aims to assist early diagnosis by automatically identifying tissue types in microscopic images into four categories: **Normal, Benign, In Situ carcinoma,** and **Invasive carcinoma**.
 
-Breast cancer remains a leading cause of cancer-related deaths worldwide. Since manual examination of histopathological images is time-consuming and subjective, deep learning offers a promising alternative to support and speed up diagnosis.
-
----
-
-## ⚠️ Key Challenge: High-Resolution Images
-
-The BACH dataset provides **very high-resolution images** (2048 × 1536 pixels), which posed a major challenge during model training. Most CNN architectures are designed for smaller input sizes (e.g., 128×128 or 224×224), so we had to **downscale images to 384×384**, resulting in **loss of important morphological features**. This affected the model's ability to distinguish between visually similar classes such as *In Situ* and *Normal*.
-
-To address this, we explored the **sliding window technique**, where large images are split into smaller patches (e.g., 128×128) to preserve local information and improve feature extraction. Although this significantly improved the quality of input data, the number of generated patches per image (~16,500 per class) made training computationally intensive and **infeasible without GPU acceleration** (one epoch > 3 hours).
-
-### ➕ Proposed Solution:
-- Use **pretrained models** (e.g., ResNet, Inception-v3) with **transfer learning**
-- Apply **patch-based classification** with **sliding windows** selectively on informative regions
-- Use **adaptive architectures** like RANet for multi-scale input handling
+Breast cancer is a major global health issue, and traditional diagnosis based on visual assessment is time-consuming and subjective. This project proposes an AI-based solution to support and speed up the diagnostic process.
 
 ---
 
 ## 🧠 Model Summary
 
-- **Type**: Custom CNN (built from scratch)
+- **Architecture**: Custom CNN with 4 convolutional blocks
 - **Framework**: TensorFlow + Keras
-- **Structure**:
-  - 4 convolutional blocks (Conv2D + BatchNorm + ReLU + MaxPooling)
-  - Dropout + GlobalAveragePooling
-  - Dense (128) + Softmax output
-- **Input Size**: 384 × 384
+- **Layers**:
+  - Conv2D (filters: 32, 64, 128, 256; kernel: 3×3; L2 regularization)
+  - BatchNormalization
+  - ReLU activation
+  - MaxPooling2D
+  - Dropout
+  - GlobalAveragePooling2D
+  - Dense (128) + Softmax output layer
 - **Optimizer**: Adam
-- **Loss**: Categorical Crossentropy
+- **Loss Function**: Categorical Crossentropy
 - **Metrics**: Accuracy
+- **Input Image Size**: Resized to 384×384
+- **Training Parameters**:
+  - Epochs: 25
+  - Batch Size: 16
+  - Data Split: 70% Train / 15% Validation / 15% Test
 
 ---
 
 ## 📊 Dataset Information
 
-- **Source**: [Kaggle – BACH Challenge 2018](https://www.kaggle.com/datasets/truthisneverlinear/bach-breast-cancer-histology-images)
-- **Classes**: Normal, Benign, InSitu, Invasive (100 images per class)
-- **Total**: 400 images (17 GB original; 7 GB used after filtering)
+- **Dataset**: [Kaggle - BACH 2018](https://www.kaggle.com/datasets/truthisneverlinear/bach-breast-cancer-histology-images)
+- **Image Resolution**: Original: 2048 × 1536 pixels → Resized: 384 × 384
+- **Total Images**: 400 (100 per class)
+- **Classes**:
+  - Normal
+  - Benign
+  - In Situ carcinoma
+  - Invasive carcinoma
 - **Preprocessing**:
-  - Resize to 384×384
-  - Normalize pixel values
-  - Augmentations: Rotation, translation, zoom, shear, flip
+  - Augmentation: Rotation, shift, zoom, shear, horizontal flip
+  - Resizing and normalization
 
 ---
 
 ## 🔁 Program / Algorithm Flow
 
-```text
-1. Load and preprocess images (resize, normalize, augment)
-2. Split dataset (70% train / 15% val / 15% test)
-3. Define and compile CNN architecture
-4. Train model (25 epochs, batch size = 16)
-5. Evaluate performance (accuracy, F1-score)
-6. Infer class for new uploaded histology image
+1. Load and preprocess dataset
+2. Split dataset into train, validation, and test sets
+3. Define CNN model architecture
+4. Compile the model
+5. Train the model on training data
+6. Evaluate model on validation and test sets
+7. Use model for inference on new input images
+
+---
+
+## 📈 Performance Results
+
+| Metric                 | Value     |
+|------------------------|-----------|
+| Training Accuracy      | ~60%      |
+| Validation Accuracy    | 65%       |
+| Test Accuracy          | 50%       |
+| Best F1-score (Benign) | 0.62      |
+| Worst F1-score (InSitu)| 0.20      |
+
+- Overfitting observed after epoch 20
+- Confusion between InSitu, Normal, and Benign classes
+- Dataset imbalance and downscaling affected performance
+
+---
+
+## 🧪 Inference Demo
+
+The model allows users to upload histopathological images of breast tissue. After preprocessing, it outputs the predicted class and a confidence score.
+
+### Steps:
+1. Upload histology image
+2. Image is resized, normalized
+3. Model predicts class: **Benign / InSitu / Invasive / Normal**
+4. Display prediction with confidence
+
+---
+## 🔍 Sliding Window Approach (Exploratory)
+
+Due to the **very high resolution** of original images (2048×1536), resizing to 384×384 caused significant information loss.
+
+To overcome this, we experimented with a **sliding window technique**, where each image was split into smaller patches (e.g., 299×299). This allowed better local feature extraction and preserved more morphological information.
+
+- ✅ Generated ~16,500 patches **per class**
+- ❌ However, training on this large patch set was **computationally infeasible** using our environment (Google Colab):
+  - One epoch ≈ 3 hours
+  - 3-hour session limit interrupted training
+
+While the method showed promise, it was ultimately abandoned due to resource limitations. It is strongly recommended for future implementations with better hardware (GPU clusters or TPUs).
+
+---
+
+## 📉 Limitations
+
+- **High-resolution image problem**: Resizing led to loss of fine-grained tissue structures.
+- **Sliding Window Training** was not feasible due to runtime constraints.
+- **Overfitting** was observed after ~20 epochs.
+- **Poor performance** on subtle or underrepresented classes (e.g. `InSitu`).
+- **No model interpretability tools** (e.g., Grad-CAM) implemented.
+
+---
+
+## 🧭 Potential Improvements
+
+- Use **transfer learning** (e.g. ResNet, DenseNet, EfficientNet)
+- Apply **nuclear-based patch extraction**
+- Adopt **Resolution Adaptive Networks (RANet)** for variable image complexity
+- Leverage **semi-supervised learning** for better generalization on limited data
+- Incorporate **Grad-CAM** for model explainability
+
+---
+## 👨‍💻 Authors
+
+- Adna Hajdarević
+- Elma Hodžić
+- Nedim Kalajdžija  
+**Supervisor**: Merjem Bećirović
+
+---
