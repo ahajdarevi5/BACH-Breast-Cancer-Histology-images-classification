@@ -114,11 +114,9 @@ While the method showed promise, it was ultimately abandoned due to resource lim
 ## 🧭 Potential Improvements
 
 - Use **transfer learning** (e.g. ResNet, DenseNet, EfficientNet)
-- Apply **nuclear-based patch extraction**
+- Apply **patch extraction**
 - Adopt **Resolution Adaptive Networks (RANet)** for variable image complexity
-- Leverage **semi-supervised learning** for better generalization on limited data
-- Incorporate **Grad-CAM** for model explainability
-
+  
 ---
 ## 👨‍💻 Authors
 
